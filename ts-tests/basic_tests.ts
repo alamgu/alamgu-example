@@ -110,35 +110,34 @@ function testTransaction(path: string, txn: string, prompts: any[]) {
          }, prompts);
      }
 }
+describe("Signing tests", function() {
+  before( async function() {
+    while(!nacl) await new Promise(r => setTimeout(r, 100));
+  })
 
-// describe("Signing tests", function() {
-//   before( async function() {
-//     while(!nacl) await new Promise(r => setTimeout(r, 100));
-//   })
-
-//   it("can sign a transaction",
-//      testTransaction(
-//        "0",
-//        JSON.stringify({"testapp":true}),
-//        [
-//          {
-//            "header": "Transaction hash",
-//            "prompt": "a5dQl_ZMC3Onv0ldlZ9C-Nl75FXraTHpoipEGTdNzrQ",
-//          },
-//          {
-//            "header": "Sign for Address",
-//            "prompt": "7f916b907886913c6dd7ab62681fc52140afbc84"
-//          },
-//          {
-//            "text": "Sign Transaction?",
-//            "x": 19,
-//            "y": 11
-//          },
-//          {
-//            "text": "Confirm",
-//            "x": 43,
-//            "y": 11,
-//          }
-//        ]
-//      ));
-// });
+  it("can sign a transaction",
+     testTransaction(
+       "0",
+       JSON.stringify({"testapp":true}),
+       [
+         {
+           "header": "Transaction hash",
+           "prompt": "a5dQl_ZMC3Onv0ldlZ9C-Nl75FXraTHpoipEGTdNzrQ",
+         },
+         {
+           "header": "Sign for Address",
+           "prompt": "7f916b907886913c6dd7ab62681fc52140afbc84"
+         },
+         {
+           "text": "Sign Transaction?",
+           "x": 19,
+           "y": 11
+         },
+         {
+           "text": "Confirm",
+           "x": 43,
+           "y": 11,
+         }
+       ]
+     ));
+});
