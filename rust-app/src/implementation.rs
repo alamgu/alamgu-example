@@ -2,7 +2,7 @@ use crate::interface::*;
 use arrayvec::ArrayVec;
 use core::fmt::Write;
 use ledger_crypto_helpers::hasher::{Hash, Hasher, Blake2b};
-use ledger_crypto_helpers::common::{with_public_keys, PKH, public_key_bytes};
+use ledger_crypto_helpers::common::{with_public_keys, PKH, public_key_bytes, try_option};
 use ledger_crypto_helpers::eddsa::eddsa_sign;
 use ledger_log::{info};
 use ledger_parser_combinators::interp_parser::{
@@ -29,8 +29,7 @@ pub type GetAddressImplT = impl InterpParser<Bip32Key, Returning = ArrayVec<u8, 
 
 pub const GET_ADDRESS_IMPL: GetAddressImplT =
     Action(SubInterp(DefaultInterp), mkfn(|path: &ArrayVec<u32, 10>, destination: &mut Option<ArrayVec<u8, 128>>| -> Option<()> {
-        with_public_keys(path, |key: &_, pkh: &PKH| {
-
+        with_public_keys(path, |key: &_, pkh: &PKH| { try_option(|| -> Option<()> {
             write_scroller("Provide Public Key", |w| Ok(write!(w, "For Address     {}", pkh)?))?;
 
             final_accept_prompt(&[])?;
@@ -41,8 +40,8 @@ pub const GET_ADDRESS_IMPL: GetAddressImplT =
             rv.try_extend_from_slice(key_bytes).ok()?;
             rv.try_push(u8::try_from(pkh.0.len()).ok()?).ok()?;
             rv.try_extend_from_slice(&pkh.0).ok()?;
-            Ok(())
-        }).ok()
+            Some(())
+        }())}).ok()
     }));
 
 pub type SignImplT = impl InterpParser<SignParameters, Returning = ArrayVec<u8, 128>>;
@@ -64,10 +63,10 @@ pub static SIGN_IMPL: SignImplT = Action(
             SubInterp(DefaultInterp),
             // And ask the user if this is the key the meant to sign with:
             mkmvfn(|path: ArrayVec<u32, 10>, destination: &mut Option<ArrayVec<u32, 10>>| {
-                with_public_keys(&path, |_, pkh: &PKH| {
+                with_public_keys(&path, |_, pkh: &PKH| { try_option(|| -> Option<()> {
                     write_scroller("Sign for Address", |w| Ok(write!(w, "{}", pkh)?))?;
-                    Ok(())
-                }).ok();
+                    Some(())
+                }())}).ok();
                 *destination = Some(path);
                 Some(())
             }),
@@ -77,7 +76,7 @@ pub static SIGN_IMPL: SignImplT = Action(
         final_accept_prompt(&[&"Sign Transaction?"])?;
 
         // By the time we get here, we've approved and just need to do the signature.
-        let sig = eddsa_sign(path.as_ref()?, &hash.as_ref()?.0[..])?;
+        let sig = eddsa_sign(path.as_ref()?, &hash.as_ref()?.0[..]).ok()?;
         let mut rv = ArrayVec::<u8, 128>::new();
         rv.try_extend_from_slice(&sig.0[..]).ok()?;
         *destination = Some(rv);

@@ -1,11 +1,8 @@
 #![no_std]
 #![allow(incomplete_features)]
-#![feature(const_generics)]
+#![feature(adt_const_params)]
 #![feature(str_internals)]
-#![feature(try_trait)]
-#![feature(min_type_alias_impl_trait)]
-#![feature(impl_trait_in_bindings)]
-#![feature(const_fn_fn_ptr_basics)]
+#![feature(type_alias_impl_trait)]
 #![feature(const_mut_refs)]
 #![cfg_attr(all(target_os = "nanos", test), no_main)]
 #![cfg_attr(target_os = "nanos", feature(custom_test_frameworks))]
@@ -26,6 +23,9 @@ pub mod interface;
 
 #[cfg(all(target_os = "nanos"))]
 pub mod implementation;
+
+#[cfg(all(target_os = "nanos"))]
+pub mod main_nanos;
 
 #[cfg(all(target_os = "nanos", test))]
 use core::panic::PanicInfo;
