@@ -19,7 +19,7 @@ rustflags = [
   "--emit=obj,llvm-ir,llvm-bc"
 ]
 linker = "armv6m-unknown-none-eabi-clang"
-runner = "./speculos-wrapper -k 2.0"
+runner = "./speculos-wrapper -m nanos "
 
 [build]
 target = "thumbv6m-none-eabi"
