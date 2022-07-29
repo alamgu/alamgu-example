@@ -1,16 +1,21 @@
 [unstable]
 build-std = ["core"]
 
+# link.ld and device_layout.ld are picked up from nano-sdk
 [target.thumbv6m-none-eabi]
 rustflags = [ 
   "-C", "relocation-model=ropi",
-  "-C", "link-arg=-Tscript.ld",
+  "-C", "link-arg=-Tlink.ld",
+  "-C", "link-arg=-Tdevice_layout.ld",
   "-C", "opt-level=3",
   "-C", "passes=ledger-ropi",
   "-C", "codegen-units=1",
   "-C", "lto",
+  "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
   "-C", "embed-bitcode",
   "--cfg", "target_os=\"nanos\"",
+  "--cfg", "target_device=\"nanos\"",
+  "-Z", "new-llvm-pass-manager=no",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
 linker = "armv6m-unknown-none-eabi-clang"
