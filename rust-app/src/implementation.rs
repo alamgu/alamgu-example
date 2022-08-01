@@ -8,7 +8,7 @@ use ledger_log::{info};
 use ledger_parser_combinators::interp_parser::{
     Action, DefaultInterp, DropInterp, ParserCommon, MoveAction, InterpParser, ObserveBytes, SubInterp,
 };
-use ledger_prompts_ui::{write_scroller, final_accept_prompt};
+use ledger_prompts_ui::{final_accept_prompt, ScrollerError, PromptWrite};
 
 use core::convert::TryFrom;
 use zeroize::{Zeroizing};
@@ -25,12 +25,24 @@ const fn mkvfn<A>(q: fn(&A,&mut Option<()>)->Option<()>) -> fn(&A,&mut Option<()
     q
 }
 
+#[cfg(not(target_device = "nanos"))]
+#[inline(never)]
+fn scroller < F: for <'b> Fn(&mut PromptWrite<'b, 16>) -> Result<(), ScrollerError> > (title: &str, prompt_function: F) -> Option<()> {
+    ledger_prompts_ui::write_scroller_three_rows(title, prompt_function)
+}
+
+#[cfg(target_device = "nanos")]
+#[inline(never)]
+fn scroller < F: for <'b> Fn(&mut PromptWrite<'b, 16>) -> Result<(), ScrollerError> > (title: &str, prompt_function: F) -> Option<()> {
+    ledger_prompts_ui::write_scroller(title, prompt_function)
+}
+
 pub type GetAddressImplT = impl InterpParser<Bip32Key, Returning = ArrayVec<u8, 128>>;
 
 pub const GET_ADDRESS_IMPL: GetAddressImplT =
     Action(SubInterp(DefaultInterp), mkfn(|path: &ArrayVec<u32, 10>, destination: &mut Option<ArrayVec<u8, 128>>| -> Option<()> {
         with_public_keys(path, |key: &_, pkh: &PKH| { try_option(|| -> Option<()> {
-            write_scroller("Provide Public Key", |w| Ok(write!(w, "For Address     {}", pkh)?))?;
+            scroller("Provide Public Key", |w| Ok(write!(w, "For Address     {}", pkh)?))?;
 
             final_accept_prompt(&[])?;
 
@@ -54,7 +66,7 @@ pub static SIGN_IMPL: SignImplT = Action(
             // Ask the user if they accept the transaction body's hash
             mkfn(|(mut hasher, _): &(Blake2b, _), destination: &mut Option<Zeroizing<Hash<32>>>| {
                 let the_hash = hasher.finalize();
-                write_scroller("Transaction hash", |w| Ok(write!(w, "{}", the_hash.deref())?))?;
+                scroller("Transaction hash", |w| Ok(write!(w, "{}", the_hash.deref())?))?;
                 *destination=Some(the_hash);
                 Some(())
             }),
@@ -64,7 +76,7 @@ pub static SIGN_IMPL: SignImplT = Action(
             // And ask the user if this is the key the meant to sign with:
             mkmvfn(|path: ArrayVec<u32, 10>, destination: &mut Option<ArrayVec<u32, 10>>| {
                 with_public_keys(&path, |_, pkh: &PKH| { try_option(|| -> Option<()> {
-                    write_scroller("Sign for Address", |w| Ok(write!(w, "{}", pkh)?))?;
+                    scroller("Sign for Address", |w| Ok(write!(w, "{}", pkh)?))?;
                     Some(())
                 }())}).ok();
                 *destination = Some(path);

@@ -7,7 +7,9 @@ import { Common } from "hw-app-obsidian-common";
 import * as blake2b from "blake2b";
 import { instantiate, Nacl } from "js-nacl";
 
-let ignoredScreens = [ "W e l c o m e", "Cancel", "Working...", "Exit", "Rust App 0.0.1"]
+// Used for clearing second and third rows
+let BLANK_STR = "                                     ";
+let ignoredScreens = [ "W e l c o m e", "Cancel", "Working...", "Exit", "Rust App 0.0.1", BLANK_STR]
 
 let setAcceptAutomationRules = async function() {
     await Axios.post("http://0.0.0.0:5000/automation", {
@@ -15,6 +17,8 @@ let setAcceptAutomationRules = async function() {
       rules: [
         ... ignoredScreens.map(txt => { return { "text": txt, "actions": [] } }),
         { "y": 16, "actions": [] },
+        { "y": 31, "actions": [] },
+        { "y": 46, "actions": [] },
         { "text": "Confirm", "actions": [ [ "button", 1, true ], [ "button", 2, true ], [ "button", 2, false ], [ "button", 1, false ] ]},
         { "actions": [ [ "button", 2, true ], [ "button", 2, false ] ]}
       ]
@@ -35,6 +39,10 @@ let processPrompts = function(prompts: [any]) {
         prompt = "";
       }
     } else if(value["y"] == 16) {
+      prompt += value["text"];
+    } else if((value["y"] == 31)) {
+      prompt += value["text"];
+    } else if((value["y"] == 46)) {
       prompt += value["text"];
     } else {
       if(header || prompt) rv.push({ header, prompt });
