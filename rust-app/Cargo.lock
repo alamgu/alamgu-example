@@ -94,6 +94,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ledger-async-block"
+version = "0.1.0"
+source = "git+https://github.com/obsidiansystems/ledger-platform?branch=wip-async-overridable#6da4b2e24091fadd9ade6243c7a2644cba3ab973"
+dependencies = [
+ "arrayvec",
+ "ledger-log",
+ "ledger-parser-combinators",
+ "nanos_sdk",
+ "pin-project",
+]
+
+[[package]]
 name = "ledger-crypto-helpers"
 version = "0.1.0"
 source = "git+https://github.com/alamgu/ledger-crypto-helpers?branch=patchable#f448b0e72db3f8be01f482de2fa3e42aa8056591"
@@ -118,7 +130,7 @@ dependencies = [
 [[package]]
 name = "ledger-parser-combinators"
 version = "0.1.0"
-source = "git+https://github.com/alamgu/ledger-parser-combinators?branch=patchable#ea0a506bf29f675121d8fb86f758922d45ef866e"
+source = "git+https://github.com/alamgu/ledger-parser-combinators?branch=async#7e951e0875327f2160132c8929bbdf3f80c762cd"
 dependencies = [
  "arrayvec",
  "bstringify",
@@ -199,6 +211,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9423e2b32f7a043629287a536f21951e8c6a82482d0acb1eeebfc90bc2225b22"
 
 [[package]]
+name = "pin-project"
+version = "1.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78203e83c48cffbe01e4a2d35d566ca4de445d79a85372fc64e378bfc812a260"
+dependencies = [
+ "pin-project-internal",
+]
+
+[[package]]
+name = "pin-project-internal"
+version = "1.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "710faf75e1b33345361201d36d04e98ac1ed8909151a017ed384700836104c74"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -240,12 +272,14 @@ name = "rust-app"
 version = "0.0.1"
 dependencies = [
  "arrayvec",
+ "ledger-async-block",
  "ledger-crypto-helpers",
  "ledger-log",
  "ledger-parser-combinators",
  "ledger-prompts-ui",
  "nanos_sdk",
  "nanos_ui",
+ "pin-project",
  "testmacro",
  "zeroize",
 ]
