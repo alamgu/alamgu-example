@@ -1,8 +1,8 @@
 {
   "owner": "obsidiansystems",
   "repo": "ledger-platform",
-  "branch": "dn-wip-nixpkgs-22.05",
+  "branch": "jg-nano-x-and-splus",
   "private": false,
-  "rev": "21309d2457dfc7cef07cebdcedc65d3eb93c7e11",
-  "sha256": "0bnr9wyp6mwnghwf1m9idnvwkkkyqxmabzafxxg5rg2ww54paw9h"
+  "rev": "ee43a6e86c877f864c627b2280fd7b277f6490fc",
+  "sha256": "0ygcjxsq9rva6xn9zhp8p1j8rk1lq1k3pk1wil15vynnsvcya1gq"
 }

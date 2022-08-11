@@ -1,28 +1,46 @@
 [unstable]
 build-std = ["core"]
+build-std-features = ["compiler-builtins-mem"]
 
 # link.ld and device_layout.ld are picked up from nano-sdk
-[target.thumbv6m-none-eabi]
-rustflags = [ 
-  "-C", "relocation-model=ropi",
-  "-C", "link-arg=-Tlink.ld",
-  "-C", "link-arg=-Tdevice_layout.ld",
-  "-C", "opt-level=3",
+[target.nanosplus]
+rustflags = [
   "-C", "passes=ledger-ropi",
   "-C", "codegen-units=1",
-  "-C", "lto",
   "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
   "-C", "embed-bitcode",
   "--cfg", "target_os=\"nanos\"",
-  "--cfg", "target_device=\"nanos\"",
+  "--cfg", "target_device=\"nanosplus\"",
   "-Z", "new-llvm-pass-manager=no",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
-linker = "armv6m-unknown-none-eabi-clang"
+runner = "./speculos-wrapper -m nanosp "
+
+[target.nanos]
+rustflags = [
+  "-C", "passes=ledger-ropi",
+  "-C", "codegen-units=1",
+  "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
+  "-C", "embed-bitcode",
+  "--cfg", "target_os=\"nanos\"",
+  "--cfg", "target_device=\"nanosplus\"",
+  "-Z", "new-llvm-pass-manager=no",
+  "--emit=obj,llvm-ir,llvm-bc"
+]
 runner = "./speculos-wrapper -m nanos "
 
-[build]
-target = "thumbv6m-none-eabi"
+[target.nanox]
+rustflags = [
+  "-C", "passes=ledger-ropi",
+  "-C", "codegen-units=1",
+  "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
+  "-C", "embed-bitcode",
+  "--cfg", "target_os=\"nanos\"",
+  "--cfg", "target_device=\"nanosplus\"",
+  "-Z", "new-llvm-pass-manager=no",
+  "--emit=obj,llvm-ir,llvm-bc"
+]
+runner = "./speculos-wrapper -m nanox "
 
 [alias]
 tt = "test --features extra_debug"

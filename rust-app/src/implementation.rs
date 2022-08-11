@@ -2,8 +2,8 @@ use crate::interface::*;
 use arrayvec::ArrayVec;
 use core::fmt::Write;
 use ledger_crypto_helpers::hasher::{Hash, Hasher, Blake2b};
-use ledger_crypto_helpers::common::{with_public_keys, PKH, public_key_bytes, try_option};
-use ledger_crypto_helpers::eddsa::eddsa_sign;
+use ledger_crypto_helpers::common::{try_option, Address};
+use ledger_crypto_helpers::eddsa::{eddsa_sign, with_public_keys, ed25519_public_key_bytes, Ed25519RawPubKeyAddress};
 use ledger_log::{info};
 use ledger_parser_combinators::interp_parser::{
     Action, DefaultInterp, DropInterp, ParserCommon, MoveAction, InterpParser, ObserveBytes, SubInterp,
@@ -14,6 +14,8 @@ use core::convert::TryFrom;
 use zeroize::{Zeroizing};
 use core::ops::Deref;
 
+type PKH = Ed25519RawPubKeyAddress;
+
 // A couple type ascription functions to help the compiler along.
 const fn mkfn<A,B,C>(q: fn(&A,&mut B)->C) -> fn(&A,&mut B)->C {
   q
@@ -21,9 +23,11 @@ const fn mkfn<A,B,C>(q: fn(&A,&mut B)->C) -> fn(&A,&mut B)->C {
 const fn mkmvfn<A,B,C>(q: fn(A,&mut B)->Option<C>) -> fn(A,&mut B)->Option<C> {
     q
 }
+/*
 const fn mkvfn<A>(q: fn(&A,&mut Option<()>)->Option<()>) -> fn(&A,&mut Option<()>)->Option<()> {
     q
 }
+*/
 
 #[cfg(not(target_device = "nanos"))]
 #[inline(never)]
@@ -46,12 +50,21 @@ pub const GET_ADDRESS_IMPL: GetAddressImplT =
 
             final_accept_prompt(&[])?;
 
-            let key_bytes = public_key_bytes(key);
             let rv = destination.insert(ArrayVec::new());
+
+            // Should return the format that the chain customarily uses for public keys; for
+            // ed25519 that's usually r | s with no prefix, which isn't quite our internal
+            // representation.
+            let key_bytes = ed25519_public_key_bytes(key);
+
             rv.try_push(u8::try_from(key_bytes.len()).ok()?).ok()?;
             rv.try_extend_from_slice(key_bytes).ok()?;
-            rv.try_push(u8::try_from(pkh.0.len()).ok()?).ok()?;
-            rv.try_extend_from_slice(&pkh.0).ok()?;
+
+            // And we'll send the address along; in our case it happens to be the same as the
+            // public key, but in general it's something computed from the public key.
+            let binary_address = pkh.get_binary_address();
+            rv.try_push(u8::try_from(binary_address.len()).ok()?).ok()?;
+            rv.try_extend_from_slice(binary_address).ok()?;
             Some(())
         }())}).ok()
     }));

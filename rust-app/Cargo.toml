@@ -9,10 +9,9 @@ resolver = "2"
 [dependencies]
 arrayvec = { version = "0.7.2", default-features = false }
 ledger-parser-combinators = { git = "https://github.com/obsidiansystems/ledger-parser-combinators" }
-ledger-log = { git = "https://github.com/obsidiansystems/ledger-platform" }
-ledger-crypto-helpers = { git = "https://github.com/Alamgu/ledger-crypto-helpers", branch = "dn-support-rust-1.61" }
+ledger-log = { git = "https://github.com/Alamgu/ledger-log" }
+ledger-crypto-helpers = { git = "https://github.com/Alamgu/ledger-crypto-helpers", branch = "jg-update-for-new-sdk" }
 zeroize = { version = "1.5.2", default-features = false }
-
 # Pass --features speculos,ledger-log/log_info (or log_trace, etc) to enable
 # speculos logging and change log level.
 [features]
@@ -20,12 +19,22 @@ default = [ ]
 speculos = [ "nanos_sdk/speculos", "ledger-log/speculos", "ledger-log/log_error", "ledger-parser-combinators/logging" ]
 extra_debug = ["ledger-log/log_trace"]
 
-[target.thumbv6m-none-eabi.dependencies]
+[target.nanosplus.dependencies]
 nanos_sdk = { git = "https://github.com/LedgerHQ/ledger-nanos-sdk.git" } 
 nanos_ui = { git = "https://github.com/LedgerHQ/ledger-nanos-ui.git" } 
 ledger-prompts-ui = { git = "https://github.com/Alamgu/ledger-prompts-ui", branch = "dn-three-rows-scroller" }
 
-[target.thumbv6m-none-eabi.dev-dependencies.nanos_sdk]
+[target.nanos.dependencies]
+nanos_sdk = { git = "https://github.com/LedgerHQ/ledger-nanos-sdk.git" } 
+nanos_ui = { git = "https://github.com/LedgerHQ/ledger-nanos-ui.git" } 
+ledger-prompts-ui = { git = "https://github.com/Alamgu/ledger-prompts-ui", branch = "dn-three-rows-scroller" }
+
+[target.nanox.dependencies]
+nanos_sdk = { git = "https://github.com/LedgerHQ/ledger-nanos-sdk.git" } 
+nanos_ui = { git = "https://github.com/LedgerHQ/ledger-nanos-ui.git" } 
+ledger-prompts-ui = { git = "https://github.com/Alamgu/ledger-prompts-ui", branch = "dn-three-rows-scroller" }
+
+[target.nanosplus.dev-dependencies.nanos_sdk]
 git = "https://github.com/LedgerHQ/ledger-nanos-sdk.git"
 features = [ "speculos" ]
 
@@ -38,8 +47,16 @@ test = false
 path = "bin-src/main.rs"
 
 [patch."https://github.com/LedgerHQ/ledger-nanos-sdk.git".nanos_sdk]
-git = "https://github.com/obsidiansystems/ledger-nanos-sdk.git"
-branch = "ambient-compiler-unified-build"
+git="https://github.com/alamgu/ledger-nanos-sdk"
+branch="unified-build-with-lib-bagl"
+[patch."https://github.com/LedgerHQ/ledger-nanos-ui.git".nanos_ui]
+git="https://github.com/obsidiansystems/ledger-nanos-ui"
+branch="use-lib-bagl-for-x-and-splus"
+
+[profile.dev]
+panic = "abort"
+[profile.release]
+panic = "abort"
 
 [package.metadata.nanos]
 name = "Rust App"
