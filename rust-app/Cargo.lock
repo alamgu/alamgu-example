@@ -155,7 +155,7 @@ dependencies = [
 [[package]]
 name = "nanos_ui"
 version = "0.1.0"
-source = "git+https://github.com/obsidiansystems/ledger-nanos-ui?branch=use-lib-bagl-for-x-and-splus#a1b9ed9f319cfe6ee52b71b2bdde9df9677b3989"
+source = "git+https://github.com/obsidiansystems/ledger-nanos-ui?branch=use-lib-bagl-for-x-and-splus#549f9447ad141b6aa69b8d9b49428e7c6c9af0b9"
 dependencies = [
  "nanos_sdk",
 ]
