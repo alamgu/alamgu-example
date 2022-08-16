@@ -83,7 +83,7 @@ describe('basic tests', () => {
 
     await sendCommandAndAccept(async (client : Common) => {
       let rv = await client.getPublicKey("0");
-      expect(rv.publicKey).to.equal("8118ad392b9276e348c1473649a3bbb7ec2b39380e40898d25b55e9e6ee94ca3");
+      expect(rv.publicKey).to.equal("5762236f40bfc04998c7d5684648e000502332f9c1be912f65dba1dc9e86985f");
       return;
     }, [
       { "header": "Provide Public Key", "prompt": "For Address     7f916b907886913c6dd7ab62681fc52140afbc84" },

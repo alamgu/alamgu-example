@@ -1,7 +1,7 @@
-#![cfg_attr(target_os = "nanos", no_std)]
-#![cfg_attr(target_os = "nanos", no_main)]
+#![cfg_attr(target_family = "bolos", no_std)]
+#![cfg_attr(target_family = "bolos", no_main)]
 
-#[cfg(not(target_os = "nanos"))]
+#[cfg(not(target_family = "bolos"))]
 fn main() {}
 
 use rust_app::main_nanos::*;

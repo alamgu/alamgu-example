@@ -2,7 +2,7 @@
 
 echo "Speculos Wrapper called with $*"
 case $3 in
-  *ts_tests*)
+  *) # ts_tests*)
     speculos $1 $2 $3 --display headless &
     SPECULOS=$!
     until wget -O/dev/null -o/dev/null http://localhost:5000/; do sleep 0.1; done;

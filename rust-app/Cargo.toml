@@ -37,6 +37,12 @@ ledger-prompts-ui = { git = "https://github.com/Alamgu/ledger-prompts-ui", branc
 [target.nanosplus.dev-dependencies.nanos_sdk]
 git = "https://github.com/LedgerHQ/ledger-nanos-sdk.git"
 features = [ "speculos" ]
+[target.nanos.dev-dependencies.nanos_sdk]
+git = "https://github.com/LedgerHQ/ledger-nanos-sdk.git"
+features = [ "speculos" ]
+[target.nanox.dev-dependencies.nanos_sdk]
+git = "https://github.com/LedgerHQ/ledger-nanos-sdk.git"
+features = [ "speculos" ]
 
 [dev-dependencies]
 testmacro = { git = "https://github.com/yhql/testmacro"}
