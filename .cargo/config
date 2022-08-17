@@ -14,7 +14,7 @@ rustflags = [
   "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
   "-C", "embed-bitcode",
   "--cfg", "target_os=\"nanos\"",
-  "--cfg", "target_device=\"nanos\"",
+  "--cfg", "target_family=\"bolos\"",
   "-Z", "new-llvm-pass-manager=no",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
