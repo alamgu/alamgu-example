@@ -106,7 +106,7 @@ dependencies = [
 [[package]]
 name = "ledger-parser-combinators"
 version = "0.1.0"
-source = "git+https://github.com/obsidiansystems/ledger-parser-combinators#d73f445cdd5e884af4c30d4729b34dc045427998"
+source = "git+https://github.com/alamgu/ledger-parser-combinators#d73f445cdd5e884af4c30d4729b34dc045427998"
 dependencies = [
  "arrayvec",
  "bstringify",

@@ -346,7 +346,7 @@ rec {
         edition = "2018";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/obsidiansystems/ledger-parser-combinators";
+          url = "https://github.com/alamgu/ledger-parser-combinators";
           rev = "d73f445cdd5e884af4c30d4729b34dc045427998";
           sha256 = "1ggmj6qmws711vxlbj3b14428kx696ynz8igf7rl294w9lmlqfyv";
         };
