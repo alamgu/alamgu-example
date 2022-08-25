@@ -84,7 +84,7 @@ dependencies = [
 [[package]]
 name = "ledger-crypto-helpers"
 version = "0.1.0"
-source = "git+https://github.com/Alamgu/ledger-crypto-helpers?branch=jg-update-for-new-sdk#1b0f4967f378c44be112ba0f5b3bfe5a0b0729cb"
+source = "git+https://github.com/alamgu/ledger-crypto-helpers?branch=jg-update-for-new-sdk#5bba474853f3d25bf08645ad95a5a2adc60a9e4e"
 dependencies = [
  "arrayvec",
  "base64",
@@ -97,7 +97,7 @@ dependencies = [
 [[package]]
 name = "ledger-log"
 version = "0.2.0"
-source = "git+https://github.com/Alamgu/ledger-log#c54a599faf79b65585260e72be3376bcb14ad184"
+source = "git+https://github.com/alamgu/ledger-log#c54a599faf79b65585260e72be3376bcb14ad184"
 dependencies = [
  "arrayvec",
  "nanos_sdk",
@@ -106,7 +106,7 @@ dependencies = [
 [[package]]
 name = "ledger-parser-combinators"
 version = "0.1.0"
-source = "git+https://github.com/obsidiansystems/ledger-parser-combinators#0b6d3cbbe85f80634196435d7c967432d5c209f5"
+source = "git+https://github.com/obsidiansystems/ledger-parser-combinators#d73f445cdd5e884af4c30d4729b34dc045427998"
 dependencies = [
  "arrayvec",
  "bstringify",
@@ -120,7 +120,7 @@ dependencies = [
 [[package]]
 name = "ledger-prompts-ui"
 version = "0.1.0"
-source = "git+https://github.com/Alamgu/ledger-prompts-ui?branch=dn-three-rows-scroller#903863cb95e7faf0cace571677f350be9ddff32b"
+source = "git+https://github.com/alamgu/ledger-prompts-ui#24d2f36da07131074211559cd28f235c3f7c9984"
 dependencies = [
  "arrayvec",
  "ledger-log",
@@ -146,7 +146,7 @@ dependencies = [
 [[package]]
 name = "nanos_sdk"
 version = "0.2.0"
-source = "git+https://github.com/alamgu/ledger-nanos-sdk?branch=unified-build-with-lib-bagl#380eb9fe466e39faf8748eedb55d22ac76fd28bf"
+source = "git+https://github.com/alamgu/ledger-nanos-sdk?branch=unified-build-with-lib-bagl#4c5a4f1710d99304197c2e5bbad355e2e8a1eab8"
 dependencies = [
  "cc",
  "num-traits",

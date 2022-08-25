@@ -11,6 +11,7 @@ rustflags = [
   "-C", "embed-bitcode",
   "--cfg", "target_os=\"nanos\"",
   "--cfg", "target_device=\"nanosplus\"",
+  "--cfg", "target_family=\"bolos\"",
   "-Z", "new-llvm-pass-manager=no",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
@@ -24,6 +25,7 @@ rustflags = [
   "-C", "embed-bitcode",
   "--cfg", "target_os=\"nanos\"",
   "--cfg", "target_device=\"nanosplus\"",
+  "--cfg", "target_family=\"bolos\"",
   "-Z", "new-llvm-pass-manager=no",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
