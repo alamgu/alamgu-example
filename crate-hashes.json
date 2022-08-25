@@ -1,7 +1,7 @@
 {
   "enum-init 0.1.0 (git+https://github.com/alamgu/enum-init#a831c2fbbe00af926ae87c064bfe4da58d26777c)": "1daqa7i1778rpvk8d442flk6bak6jxi6hrcc5j4maaa7ipjc6xlr",
   "ledger-crypto-helpers 0.1.0 (git+https://github.com/alamgu/ledger-crypto-helpers?branch=jg-update-for-new-sdk#5bba474853f3d25bf08645ad95a5a2adc60a9e4e)": "0ixwlz1bh85wkzn5gk6q5zmpp398lvqdzl8ykqx75wkbcdk780wd",
-  "ledger-log 0.2.0 (git+https://github.com/alamgu/ledger-log#c54a599faf79b65585260e72be3376bcb14ad184)": "1fw8dp4hmagl0ih859d4iswqxqqjdi70p0pqhbhvnr1qvkh4v15m",
+  "ledger-log 0.2.0 (git+https://github.com/alamgu/ledger-log#8da671f8c2ded1b03d344bf5a0953d1ec4b74a1e)": "1k9y595nziim4f9xvrk8305pz8n73gr42kyr7l1f4dmyr70ww80h",
   "ledger-parser-combinators 0.1.0 (git+https://github.com/alamgu/ledger-parser-combinators#d73f445cdd5e884af4c30d4729b34dc045427998)": "1ggmj6qmws711vxlbj3b14428kx696ynz8igf7rl294w9lmlqfyv",
   "ledger-prompts-ui 0.1.0 (git+https://github.com/alamgu/ledger-prompts-ui#24d2f36da07131074211559cd28f235c3f7c9984)": "0gy73gv2vrajyrzigr2iwfnw0gmj1wfpig0xlbhw1vpkpjg23w0q",
   "nanos_sdk 0.2.0 (git+https://github.com/alamgu/ledger-nanos-sdk?branch=unified-build-with-lib-bagl#4c5a4f1710d99304197c2e5bbad355e2e8a1eab8)": "1vd52h7jrhjyyspx0w70m54njjnn2f0bmbwihdc5bncz7vag7ba6",
