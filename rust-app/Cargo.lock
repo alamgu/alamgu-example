@@ -126,7 +126,7 @@ dependencies = [
 [[package]]
 name = "ledger-prompts-ui"
 version = "0.1.0"
-source = "git+https://github.com/alamgu/ledger-prompts-ui?branch=dn-support-rust-1.61#5b29e0d4d50e84e880cba3e9630d8f93948a842e"
+source = "git+https://github.com/alamgu/ledger-prompts-ui#24d2f36da07131074211559cd28f235c3f7c9984"
 dependencies = [
  "arrayvec",
  "ledger-log",
