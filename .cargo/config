@@ -7,7 +7,7 @@ rustflags = [
   "-C", "passes=ledger-ropi",
   "-C", "codegen-units=1",
   "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
-  "-C", "embed-bitcode",
+  "-C", "embed-bitcode=yes",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
 runner = "./speculos-wrapper -m nanosp -k 1.0.3 "
@@ -17,7 +17,7 @@ rustflags = [
   "-C", "passes=ledger-ropi",
   "-C", "codegen-units=1",
   "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
-  "-C", "embed-bitcode",
+  "-C", "embed-bitcode=yes",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
 runner = "./speculos-wrapper -m nanos "
@@ -27,7 +27,7 @@ rustflags = [
   "-C", "passes=ledger-ropi",
   "-C", "codegen-units=1",
   "-C", "save-temps", # Fixes incremental builds by keeping .bc and .ll files
-  "-C", "embed-bitcode",
+  "-C", "embed-bitcode=yes",
   "--emit=obj,llvm-ir,llvm-bc"
 ]
 runner = "./speculos-wrapper -m nanox "

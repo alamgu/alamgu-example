@@ -2,8 +2,10 @@
 #![allow(incomplete_features)]
 #![feature(adt_const_params)]
 #![feature(str_internals)]
+#![feature(slice_as_chunks)]
 #![feature(type_alias_impl_trait)]
 #![feature(const_mut_refs)]
+#![feature(variant_count)]
 #![cfg_attr(all(target_family = "bolos", test), no_main)]
 #![cfg_attr(target_family = "bolos", feature(custom_test_frameworks))]
 #![reexport_test_harness_main = "test_main"]
@@ -18,8 +20,6 @@ extern "C" fn sample_main() {
     test_main();
     exit_app(0);
 }
-
-pub mod interface;
 
 #[cfg(all(target_family = "bolos"))]
 pub mod implementation;
