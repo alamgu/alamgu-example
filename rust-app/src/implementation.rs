@@ -1,24 +1,71 @@
 use crate::interface::*;
 use arrayvec::ArrayVec;
 use core::fmt::Write;
-use ledger_crypto_helpers::common::{try_option, Address};
-use ledger_crypto_helpers::eddsa::{
-    ed25519_public_key_bytes, eddsa_sign, with_public_keys, Ed25519RawPubKeyAddress,
-};
-use ledger_crypto_helpers::hasher::{Blake2b, Hash, Hasher};
+use ledger_crypto_helpers::common::{try_option, Address, PubKey, CryptographyError};
+use ledger_crypto_helpers::hasher::{Blake2b, Hash, Hasher, SHA256};
 use ledger_log::info;
-use ledger_parser_combinators::interp_parser::{
+use nanos_sdk::ecc::{ECPublicKey, Secp256k1};
+/* use ledger_parser_combinators::interp_parser::{
     Action, DefaultInterp, DropInterp, InterpParser, MoveAction, ObserveBytes, ParserCommon,
     SubInterp,
-};
+}; */
+use ledger_parser_combinators::async_parser::*;
+use ledger_parser_combinators::interp::*;
+use alamgu_async_block::*;
 use ledger_prompts_ui::{final_accept_prompt, PromptWrite, ScrollerError};
 
 use core::convert::TryFrom;
 use core::ops::Deref;
 use zeroize::Zeroizing;
+use ledger_log::*;
+use core::future::Future;
 
 #[allow(clippy::upper_case_acronyms)]
-type PKH = Ed25519RawPubKeyAddress;
+type Addr = PubKey<65, 'W'>;
+
+
+pub type BipParserImplT = impl AsyncParser<Bip32Key, ByteStream> + HasOutput<Bip32Key, Output = ArrayVec<u32, 10>>;
+pub const BIP_PATH_PARSER: BipParserImplT = SubInterp(DefaultInterp);
+
+
+pub fn get_address_apdu(io: HostIO) -> impl Future<Output = ()> {
+    async move {
+        let input = io.get_params::<1>().unwrap();
+        io.result_accumulating(&[]).await;
+        error!("Doing getAddress");
+
+        let path = BIP_PATH_PARSER.parse(&mut input[0].clone()).await;
+
+        error!("Got path");
+
+        let mut rv = ArrayVec::<u8, 220>::new();
+        
+        (|| -> Option<()> {
+            let pubkey = Secp256k1::from_bip32(&path).public_key().ok()?;
+            let address = PubKey::get_address(&pubkey).ok()?;
+            rv.push((pubkey.keylength) as u8);
+            let _ = rv.try_extend_from_slice(&pubkey.pubkey[0..pubkey.keylength]).unwrap();
+            let mut temp_fmt = arrayvec::ArrayString::<128>::new();
+            write!(temp_fmt, "{}", address).unwrap();
+            rv.push(temp_fmt.as_bytes().len() as u8);
+            rv.try_extend_from_slice(temp_fmt.as_bytes()).unwrap();
+            scroller("With PKH", |w| Ok(write!(w, "{}", address)?))?;
+            Some(())
+        })();
+
+        trace!("Stashing result");
+        let hash = io.put_chunk(&rv).await;
+        trace!("Sending result back");
+        scroller("With PKH", |w| Ok(write!(w, "noodle")?));
+        let mut rv2 = ArrayVec::<u8, 220>::new();
+        rv2.try_extend_from_slice(&io.get_chunk(hash).await.unwrap());
+        io.result_accumulating(&rv2).await;
+
+        trace!("Accumulated result");
+        io.result_final(&[]).await;
+        trace!("Sent");
+    }
+}
 
 // A couple type ascription functions to help the compiler along.
 const fn mkfn<A, B, C>(q: fn(&A, &mut B) -> C) -> fn(&A, &mut B) -> C {
@@ -51,43 +98,46 @@ fn scroller<F: for<'b> Fn(&mut PromptWrite<'b, 16>) -> Result<(), ScrollerError>
     ledger_prompts_ui::write_scroller(title, prompt_function)
 }
 
-pub type GetAddressImplT = impl InterpParser<Bip32Key, Returning = ArrayVec<u8, 128>>;
+type HasherParser = impl AsyncParser<Transaction, ByteStream> + HasOutput<Transaction, Output=(SHA256, Option<()>)>;
+const fn hasher_parser() -> HasherParser { ObserveBytes(SHA256::new, SHA256::update, DropInterp) }
 
-pub const GET_ADDRESS_IMPL: GetAddressImplT = Action(
-    SubInterp(DefaultInterp),
-    mkfn(
-        |path: &ArrayVec<u32, 10>, destination: &mut Option<ArrayVec<u8, 128>>| -> Option<()> {
-            with_public_keys(path, |key: &_, pkh: &PKH| {
-                try_option(|| -> Option<()> {
-                    scroller("Provide Public Key", |w| {
-                        Ok(write!(w, "For Address     {pkh}")?)
-                    })?;
+pub fn sign_apdu(io: HostIO) -> impl Future<Output = ()> {
+    async move {
+        let mut input = io.get_params::<2>().unwrap();
+        io.result_accumulating(&[]).await; // Trick to display the "Working..." message; we should have a
+                                     // real way to do this.
+        let hash;
 
-                    final_accept_prompt(&[])?;
+        {
+            let mut txn = input[0].clone();
+            hash = hasher_parser().parse(&mut txn).await.0.finalize();
+            trace!("Hashed txn");
+        }
+        
+        if scroller("Sign Transaction", |w| Ok(write!(w, "Hash: {}", *hash)?)).is_none()
+            { reject::<()>().await; }
 
-                    let rv = destination.insert(ArrayVec::new());
+        let path = BIP_PATH_PARSER.parse(&mut input[1].clone()).await;
 
-                    // Should return the format that the chain customarily uses for public keys; for
-                    // ed25519 that's usually r | s with no prefix, which isn't quite our internal
-                    // representation.
-                    let key_bytes = ed25519_public_key_bytes(key);
+        if let Some((sig, sig_len)) = {
+            let sk = Secp256k1::from_bip32(&path);
+            let prompt_fn = || {
+                let pkh = PubKey::get_address(&sk.public_key().ok()?).ok()?;
+                scroller("With PKH", |w| Ok(write!(w, "{}", pkh)?))?;
+                final_accept_prompt(&[])
+            };
+            if prompt_fn().is_none() { reject::<()>().await; }
+            sk.deterministic_sign(&hash.0[..]).ok()
+        } {
+            // io.result_final(&sig[0..sig_len as usize]).await;
+            io.result_final(&[]).await;
+        } else {
+            reject::<()>().await;
+        }
+    }
+}
 
-                    rv.try_push(u8::try_from(key_bytes.len()).ok()?).ok()?;
-                    rv.try_extend_from_slice(key_bytes).ok()?;
-
-                    // And we'll send the address along; in our case it happens to be the same as the
-                    // public key, but in general it's something computed from the public key.
-                    let binary_address = pkh.get_binary_address();
-                    rv.try_push(u8::try_from(binary_address.len()).ok()?).ok()?;
-                    rv.try_extend_from_slice(binary_address).ok()?;
-                    Some(())
-                }())
-            })
-            .ok()
-        },
-    ),
-);
-
+/*
 pub type SignImplT = impl InterpParser<SignParameters, Returning = ArrayVec<u8, 128>>;
 
 pub static SIGN_IMPL: SignImplT = Action(
@@ -139,58 +189,32 @@ pub static SIGN_IMPL: SignImplT = Action(
         },
     ),
 );
-
-// The global parser state enum; any parser above that'll be used as the implementation for an APDU
-// must have a field here.
-#[allow(clippy::large_enum_variant)]
-pub enum ParsersState {
-    NoState,
-    GetAddressState(<GetAddressImplT as ParserCommon<Bip32Key>>::State),
-    SignState(<SignImplT as ParserCommon<SignParameters>>::State),
-}
-
-pub fn reset_parsers_state(state: &mut ParsersState) {
-    *state = ParsersState::NoState;
-}
+*/
+pub type APDUsFuture = impl Future<Output = ()>;
 
 #[inline(never)]
-pub fn get_get_address_state(
-    s: &mut ParsersState,
-) -> &mut <GetAddressImplT as ParserCommon<Bip32Key>>::State {
-    match s {
-        ParsersState::GetAddressState(_) => {}
-        _ => {
-            info!("Non-same state found; initializing state.");
-            *s = ParsersState::GetAddressState(<GetAddressImplT as ParserCommon<Bip32Key>>::init(
-                &GET_ADDRESS_IMPL,
-            ));
+pub fn handle_apdu_async(io: HostIO, ins: Ins) -> APDUsFuture {
+    trace!("Constructing future");
+    async move {
+        trace!("Dispatching");
+    match ins {
+        Ins::GetVersion => {
+
         }
+        Ins::GetPubkey => {
+            get_address_apdu(io).await;
+            trace!("APDU complete");
+            // run_fut(trampoline(), move || get_address_apdu(io)).await
+        }
+        Ins::Sign => {
+            trace!("Handling sign");
+            sign_apdu(io).await;
+        }
+        Ins::GetVersionStr => {
+        }
+        Ins::Exit => nanos_sdk::exit_app(0),
+        _ => { }
     }
-    match s {
-        ParsersState::GetAddressState(ref mut a) => a,
-        _ => {
-            panic!("")
-        }
     }
 }
 
-#[inline(never)]
-pub fn get_sign_state(
-    s: &mut ParsersState,
-) -> &mut <SignImplT as ParserCommon<SignParameters>>::State {
-    match s {
-        ParsersState::SignState(_) => {}
-        _ => {
-            info!("Non-same state found; initializing state.");
-            *s = ParsersState::SignState(<SignImplT as ParserCommon<SignParameters>>::init(
-                &SIGN_IMPL,
-            ));
-        }
-    }
-    match s {
-        ParsersState::SignState(ref mut a) => a,
-        _ => {
-            panic!("")
-        }
-    }
-}

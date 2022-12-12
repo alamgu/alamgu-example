@@ -1,16 +1,54 @@
 use crate::implementation::*;
 use crate::interface::*;
 
+use alamgu_async_block::*;
+
 use ledger_log::{info, trace};
 use ledger_parser_combinators::interp_parser::OOB;
 use ledger_prompts_ui::RootMenu;
 
 use nanos_sdk::io;
+use pin_cell::*;
+use core::cell::RefCell;
+use core::pin::Pin;
+
+
+// We are single-threaded in fact, albeit with nontrivial code flow. We don't need to worry about
+// full atomicity of the below globals.
+struct SingleThreaded<T>(T);
+unsafe impl<T> Send for SingleThreaded<T> { }
+unsafe impl<T> Sync for SingleThreaded<T> { }
+impl<T> core::ops::Deref for SingleThreaded<T> {
+    type Target = T;
+    fn deref(&self) -> &T { &self.0 }
+}
+impl<T> core::ops::DerefMut for SingleThreaded<T> {
+    fn deref_mut(&mut self) -> &mut T { &mut self.0 }
+}
+
+/*static COMM : SingleThreaded<RefCell<io::Comm>> = SingleThreaded(RefCell::new(io::Comm::new()));
+static HOSTIO_STATE : SingleThreaded<RefCell<HostIOState>> = SingleThreaded(RefCell::new(HostIOState::new(&COMM.0)));
+static HOSTIO : SingleThreaded<HostIO> = SingleThreaded(HostIO(&HOSTIO_STATE.0));
+static STATES_BACKING : SingleThreaded<PinCell<Option<APDUsFuture>>> = SingleThreaded(PinCell::new(None));
+static STATES : SingleThreaded<Pin<&PinCell<Option<APDUsFuture>>>> = SingleThreaded(Pin::static_ref(&STATES_BACKING.0));
+*/
 
 #[allow(dead_code)]
 pub fn app_main() {
-    let mut comm = io::Comm::new();
-    let mut states = ParsersState::NoState;
+let COMM : SingleThreaded<RefCell<io::Comm>> = SingleThreaded(RefCell::new(io::Comm::new()));
+let HOSTIO_STATE : SingleThreaded<RefCell<HostIOState>> = SingleThreaded(RefCell::new(HostIOState::new(unsafe { core::mem::transmute(&COMM.0) })));
+let HOSTIO : SingleThreaded<HostIO> = SingleThreaded(HostIO(unsafe { core::mem::transmute(&HOSTIO_STATE.0) }));
+let STATES_BACKING : SingleThreaded<PinCell<Option<APDUsFuture>>> = SingleThreaded(PinCell::new(None));
+let STATES : SingleThreaded<Pin<&PinCell<Option<APDUsFuture>>>> = SingleThreaded(Pin::static_ref(unsafe { core::mem::transmute(&STATES_BACKING.0) } ));
+    /*unsafe {
+
+        core::mem::forget(COMM.0.replace(io::Comm::new()));
+        core::mem::forget(HOSTIO_STATE.0.replace(HostIOState::new(&COMM.0)));
+        core::mem::transmute::<_, *mut SingleThreaded<HostIO>>(&HOSTIO as *const SingleThreaded<HostIO>).write(SingleThreaded(HostIO(&HOSTIO_STATE.0)));
+        core::mem::transmute::<_, *mut SingleThreaded<PinCell<Option<APDUsFuture>>>>(&STATES_BACKING as *const SingleThreaded<PinCell<Option<APDUsFuture>>>).write(SingleThreaded(PinCell::new(None)));
+        core::mem::transmute::<_, *mut SingleThreaded<Pin<&PinCell<Option<APDUsFuture>>>>>(&STATES as *const SingleThreaded<Pin<&PinCell<Option<APDUsFuture>>>>).write(SingleThreaded(Pin::static_ref(&STATES_BACKING.0)));
+    }*/
+
 
     let mut idle_menu = RootMenu::new([concat!("Rust App ", env!("CARGO_PKG_VERSION")), "Exit"]);
     let mut busy_menu = RootMenu::new(["Working...", "Cancel"]);
@@ -19,39 +57,46 @@ pub fn app_main() {
     info!(
         "State sizes\ncomm: {}\nstates: {}",
         core::mem::size_of::<io::Comm>(),
-        core::mem::size_of::<ParsersState>()
+        core::mem::size_of::<Option<APDUsFuture>>()
     );
 
     let // Draw some 'welcome' screen
-        menu = |states : &ParsersState, idle : & mut RootMenu<2>, busy : & mut RootMenu<2>| {
-            match states {
-                ParsersState::NoState => idle.show(),
+        menu = |states : core::cell::Ref<'_, Option<APDUsFuture>>, idle : & mut RootMenu<2>, busy : & mut RootMenu<2>| {
+            match states.is_none() {
+                true => idle.show(),
                 _ => busy.show(),
             }
         };
 
-    menu(&states, &mut idle_menu, &mut busy_menu);
+    menu(STATES.borrow(), &mut idle_menu, &mut busy_menu);
     loop {
         // Wait for either a specific button push to exit the app
         // or an APDU command
-        match comm.next_event::<Ins>() {
+        let evt = COMM.borrow_mut().next_event::<Ins>();
+        match evt {
             io::Event::Command(ins) => {
                 trace!("Command received");
-                match handle_apdu(&mut comm, ins, &mut states) {
+                let poll_rv = poll_apdu_handlers(PinMut::as_mut(&mut STATES.0.borrow_mut()), ins, *HOSTIO, (), handle_apdu_async);
+                trace!("Poll complete");
+                match poll_rv {
+//                    handle_apdu(&mut comm, ins, &mut states) {
                     Ok(()) => {
                         trace!("APDU accepted; sending response");
-                        comm.reply_ok();
+                        COMM.borrow_mut().reply_ok();
                         trace!("Replied");
                     }
-                    Err(sw) => comm.reply(sw),
+                    Err(sw) => {
+                        trace!("Replying");
+                        COMM.borrow_mut().reply(sw);
+                    }
                 };
-                menu(&states, &mut idle_menu, &mut busy_menu);
+                menu(STATES.borrow(), &mut idle_menu, &mut busy_menu);
                 trace!("Command done");
             }
             io::Event::Button(btn) => {
                 trace!("Button received");
-                match states {
-                    ParsersState::NoState => {
+                match STATES.borrow().is_none() {
+                    true => {
                         if let Some(1) = idle_menu.update(btn) {
                             info!("Exiting app at user direction via root menu");
                             nanos_sdk::exit_app(0)
@@ -60,11 +105,11 @@ pub fn app_main() {
                     _ => {
                         if let Some(1) = idle_menu.update(btn) {
                             info!("Resetting at user direction via busy menu");
-                            reset_parsers_state(&mut states)
+                            PinMut::as_mut(&mut STATES.borrow_mut()).set(None);
                         }
                     }
                 };
-                menu(&states, &mut idle_menu, &mut busy_menu);
+                menu(STATES.borrow(), &mut idle_menu, &mut busy_menu);
                 trace!("Button done");
             }
             io::Event::Ticker => {
@@ -74,6 +119,7 @@ pub fn app_main() {
     }
 }
 
+/*
 #[repr(u8)]
 #[derive(Debug)]
 enum Ins {
@@ -180,4 +226,4 @@ fn handle_apdu(comm: &mut io::Comm, ins: Ins, parser: &mut ParsersState) -> Resu
         Ins::Exit => nanos_sdk::exit_app(0),
     }
     Ok(())
-}
+}*/

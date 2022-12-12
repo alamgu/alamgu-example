@@ -21,6 +21,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "alamgu-async-block"
+version = "0.1.0"
+source = "git+https://github.com/alamgu/alamgu-async-block?branch=rewrite-better-states#2a473857605f88e404406a41b06bfdc38ea16b3c"
+dependencies = [
+ "arrayvec",
+ "ledger-log",
+ "ledger-parser-combinators",
+ "nanos_sdk",
+ "pin-project",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -53,7 +65,7 @@ checksum = "2fff2a6927b3bb87f9595d67196a70493f627687a71d87a0d692242c33f58c11"
 [[package]]
 name = "enum-init"
 version = "0.1.0"
-source = "git+https://github.com/alamgu/enum-init#a831c2fbbe00af926ae87c064bfe4da58d26777c"
+source = "git+https://github.com/obsidiansystems/enum-init#a831c2fbbe00af926ae87c064bfe4da58d26777c"
 dependencies = [
  "Inflector",
  "proc-macro2",
@@ -106,7 +118,7 @@ dependencies = [
 [[package]]
 name = "ledger-parser-combinators"
 version = "0.1.0"
-source = "git+https://github.com/alamgu/ledger-parser-combinators#c7ee244c322d42cfaf2ef124170a6e695d208b6b"
+source = "git+https://github.com/alamgu/ledger-parser-combinators?branch=async-split#33529b45b3f489f9f38fbfa09a1ad7fa1c079af9"
 dependencies = [
  "arrayvec",
  "bstringify",
@@ -114,7 +126,11 @@ dependencies = [
  "generic-array",
  "ledger-log",
  "nanos_sdk",
+ "num-derive",
+ "num-traits",
  "paste",
+ "pin-project",
+ "trie-enum",
 ]
 
 [[package]]
@@ -146,7 +162,7 @@ dependencies = [
 [[package]]
 name = "nanos_sdk"
 version = "0.2.0"
-source = "git+https://github.com/alamgu/ledger-nanos-sdk.git?branch=memory-fixes#5d48e028bad62262ddde1d0b0331335bd3109286"
+source = "git+https://github.com/alamgu/ledger-nanos-sdk.git?branch=memory-fixes#796bbe1479c06df73b3014edd94964d1b41b51b3"
 dependencies = [
  "cc",
  "num-traits",
@@ -159,6 +175,17 @@ version = "0.1.0"
 source = "git+https://github.com/obsidiansystems/ledger-nanos-ui?branch=use-lib-bagl-for-x-and-splus#6ab6938354e73d3a8aacc941e9c7bc7f83c1081e"
 dependencies = [
  "nanos_sdk",
+]
+
+[[package]]
+name = "num-derive"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "876a53fff98e03a936a674b29568b0e605f06b29372c2489ff4de23f1949743d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -175,6 +202,32 @@ name = "paste"
 version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9423e2b32f7a043629287a536f21951e8c6a82482d0acb1eeebfc90bc2225b22"
+
+[[package]]
+name = "pin-cell"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1f4c4ebd3c5f82080164b7d9cc8e505cd9536fda8c750b779daceb4b7180a7b"
+
+[[package]]
+name = "pin-project"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad29a609b6bcd67fee905812e544992d216af9d755757c05ed2d0e15a74c6ecc"
+dependencies = [
+ "pin-project-internal",
+]
+
+[[package]]
+name = "pin-project-internal"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "069bdb1e05adc7a8990dce9cc75370895fbe4e3d58b9b73bf1aee56359344a55"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "proc-macro2"
@@ -223,6 +276,7 @@ checksum = "f9ec002c35e86791825ed294b50008eea9ddfc8def4420124fbc6b08db834957"
 name = "rust-app"
 version = "0.0.1"
 dependencies = [
+ "alamgu-async-block",
  "arrayvec",
  "ledger-crypto-helpers",
  "ledger-log",
@@ -230,6 +284,7 @@ dependencies = [
  "ledger-prompts-ui",
  "nanos_sdk",
  "nanos_ui",
+ "pin-cell",
  "testmacro",
  "zeroize",
 ]
@@ -271,6 +326,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8576dbbfcaef9641452d5cf0df9b0e7eeab7694956dd33bb61515fb8f18cfdd5"
 dependencies = [
  "thread-id",
+]
+
+[[package]]
+name = "trie-enum"
+version = "0.1.0"
+source = "git+https://github.com/alamgu/trie-enum#551bddc313f2af5c2dedb79f3d6de7328e34b208"
+dependencies = [
+ "paste",
 ]
 
 [[package]]
