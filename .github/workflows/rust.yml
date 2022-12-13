@@ -77,4 +77,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path rust-app/Cargo.toml -Z build-std=core -Z build-std-features=compiler-builtins-mem --target ./rsdk/${{ matrix.device }}.json --features speculos
+          args: --manifest-path rust-app/Cargo.toml -Z build-std=core -Z build-std-features=compiler-builtins-mem --target ./rsdk/${{ matrix.device }}.json
