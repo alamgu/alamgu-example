@@ -57,8 +57,8 @@ jobs:
       - name: Checkout Speculos
         uses: actions/checkout@v3
         with:
-          repository: 'obsidiansystems/speculos'
-          ref: load-text-segment-nix
+          repository: 'LedgerHQ/speculos'
+          ref: master
           path: speculos-src
       - name: Install dependencies
         run: |
