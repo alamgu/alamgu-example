@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        device: [nanos]
+        device: [nanosplus]
     env:
       OBJCOPY: arm-none-eabi-objcopy
       NM: arm-none-eabi-nm
