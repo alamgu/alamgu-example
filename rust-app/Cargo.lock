@@ -46,9 +46,9 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "base64"
-version = "0.13.0"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
+checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "bstringify"
@@ -96,7 +96,7 @@ dependencies = [
 [[package]]
 name = "ledger-crypto-helpers"
 version = "0.2.0"
-source = "git+https://github.com/alamgu/ledger-crypto-helpers#4c4881b7db90349ed9829f2c93b1faaa0a68adc5"
+source = "git+https://github.com/alamgu/ledger-crypto-helpers?branch=hasher-dispatch#34cf27326ae12f8cc007df3b43e5f6c65812b89f"
 dependencies = [
  "arrayvec",
  "base64",

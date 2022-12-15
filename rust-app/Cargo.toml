@@ -8,7 +8,7 @@ resolver = "2"
 
 [dependencies]
 arrayvec = { version = "0.7.2", default-features = false }
-ledger-crypto-helpers = { git = "https://github.com/alamgu/ledger-crypto-helpers" }
+ledger-crypto-helpers = { git = "https://github.com/alamgu/ledger-crypto-helpers", branch="hasher-dispatch" }
 ledger-log = { git = "https://github.com/alamgu/ledger-log" }
 ledger-parser-combinators = { git = "https://github.com/alamgu/ledger-parser-combinators", branch="async-split" }
 alamgu-async-block = { git = "https://github.com/alamgu/alamgu-async-block", branch="rewrite-better-states" }

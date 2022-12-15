@@ -19,6 +19,7 @@ pub enum Ins {
     GetVersion,
     GetPubkey,
     Sign,
+    RevealAddressAndExample,
     GetVersionStr,
     Exit,
 }
@@ -30,6 +31,7 @@ impl TryFrom<u8> for Ins {
             0 => Ins::GetVersion,
             2 => Ins::GetPubkey,
             3 => Ins::Sign,
+            10 => Ins::RevealAddressAndExample,
             0xfe => Ins::GetVersionStr,
             0xff => Ins::Exit,
             _ => return Err(()),
