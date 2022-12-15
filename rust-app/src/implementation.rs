@@ -129,14 +129,13 @@ pub fn sign_apdu(io: HostIO) -> impl Future<Output = ()> {
             let sk = Secp256k1::from_bip32(&path);
             let prompt_fn = || {
                 let pkh = PubKey::get_address(&sk.public_key().ok()?).ok()?;
-                scroller("With PKH", |w| Ok(write!(w, "{}", pkh)?))?;
+                scroller("For Address", |w| Ok(write!(w, "{}", pkh)?))?;
                 final_accept_prompt(&[])
             };
             if prompt_fn().is_none() { reject::<()>().await; }
             sk.deterministic_sign(&hash.0[..]).ok()
         } {
-            // io.result_final(&sig[0..sig_len as usize]).await;
-            io.result_final(&[]).await;
+            io.result_final(&sig[0..sig_len as usize]).await;
         } else {
             reject::<()>().await;
         }

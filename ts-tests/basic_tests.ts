@@ -89,7 +89,7 @@ let sendCommandAndAccept = async function(command : any, prompts : any) {
 
     let transport = await Transport.open(BASE_URL + "/apdu");
     let client = new Common(transport, "rust-app");
-    // client.sendChunks = client.sendWithBlocks; // Use Block protocol
+    client.sendChunks = client.sendWithBlocks; // Use Block protocol
     let err = null;
 
     try { await command(client); } catch(e) {
@@ -121,16 +121,11 @@ describe('basic tests', () => {
 
     await sendCommandAndAccept(async (client : Common) => {
       let rv = await client.getPublicKey("0");
-      expect(rv.publicKey).to.equal("8118ad392b9276e348c1473649a3bbb7ec2b39380e40898d25b55e9e6ee94ca3");
+      expect(rv.publicKey).to.equal("0451ec84e33a3119486461a44240e906ff94bf40cf807b025b1ca43332b80dc9dbfeeeecf616eb461fbb56e3d03fa385545c2d280c3449a2013a404606da512b08");
+      expect(Buffer.from(rv.address, 'hex').toString()).to.equal("51ec84e33a3119486461a44240e906ff94bf40cf807b025b1ca43332b80dc9dbfeeeecf616eb461fbb56e3d03fa385545c2d280c3449a2013a404606da512b08"); // TODO: stop this coming out in hex?!
       return;
-    }, [
-      { "header": "Provide Public Key", "prompt": "For Address     8118ad392b9276e348c1473649a3bbb7ec2b39380e40898d25b55e9e6ee94ca3" },
-      {
-        "text": "Confirm",
-        "x": 43,
-        "y": 11,
-      },
-    ]);
+    }, [ ]
+    );
   });
 });
 
@@ -149,42 +144,41 @@ function testTransaction(path: string, txn: string, prompts: any[]) {
            await Axios.delete(BASE_URL + "/events");
 
            let sig = await client.signTransaction(path, Buffer.from(txn, "utf-8").toString("hex"));
-           expect(sig.signature.length).to.equal(128);
+	   expect(sig).to.deep.equal({
+		   signature: "3044022040bedef9f383d0af30d25400c6cde4c87d3fa1f79da661c35202faa72509a288022012522fe2f5315ca41e2dc50d59fb9f9652503713399cab3681e0ecd257cef1c8"
+	   });
+	   // Best to do a real signature check:
+           /* expect(sig.signature.length).to.equal(128);
            let hash = blake2b(32).update(Buffer.from(txn, "utf-8")).digest();
            let pass = nacl.crypto_sign_verify_detached(Buffer.from(sig.signature, 'hex'), hash, Buffer.from(pubkey, 'hex'));
-           expect(pass).to.equal(true);
+           expect(pass).to.equal(true);*/
          }, prompts);
      }
 }
 
-// describe("Signing tests", function() {
-//   before( async function() {
-//     while(!nacl) await new Promise(r => setTimeout(r, 100));
-//   })
+ describe("Signing tests", function() {
+   before( async function() {
+     while(!nacl) await new Promise(r => setTimeout(r, 100));
+   })
 
-//   it("can sign a transaction",
-//      testTransaction(
-//        "0",
-//        JSON.stringify({"testapp":true}),
-//        [
-//          {
-//            "header": "Transaction hash",
-//            "prompt": "a5dQl_ZMC3Onv0ldlZ9C-Nl75FXraTHpoipEGTdNzrQ",
-//          },
-//          {
-//            "header": "Sign for Address",
-//            "prompt": "7f916b907886913c6dd7ab62681fc52140afbc84"
-//          },
-//          {
-//            "text": "Sign Transaction?",
-//            "x": 19,
-//            "y": 11
-//          },
-//          {
-//            "text": "Confirm",
-//            "x": 43,
-//            "y": 11,
-//          }
-//        ]
-//      ));
-// });
+   it("can sign a transaction",
+      testTransaction(
+        "0",
+        "AABBCCDD",
+        [
+          {
+            "header": "Sign Transaction",
+            "prompt": "Hash: 47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+          },
+          {
+            "header": "For Address",
+            "prompt": "51ec84e33a3119486461a44240e906ff94bf40cf807b025b1ca43332b80dc9dbfeeeecf616eb461fbb56e3d03fa385545c2d280c3449a2013a404606da512b08"
+          },
+          {
+            "text": "Confirm",
+            "x": 43,
+            "y": 11,
+          }
+        ]
+      ));
+ });
