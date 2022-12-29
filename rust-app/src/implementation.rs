@@ -11,8 +11,8 @@ use nanos_sdk::ecc::{ECPublicKey, Secp256k1};
 }; */
 use ledger_parser_combinators::async_parser::*;
 use ledger_parser_combinators::interp::*;
-use alamgu_async_block::*;
-use ledger_prompts_ui::{final_accept_prompt, PromptWrite, ScrollerError};
+use alamgu_async_block::{*, prompts::*};
+// use ledger_prompts_ui::{final_accept_prompt, PromptWrite, ScrollerError};
 
 use core::convert::TryFrom;
 use core::ops::Deref;
@@ -23,6 +23,19 @@ use core::future::Future;
 #[allow(clippy::upper_case_acronyms)]
 type Addr = PubKey<65, 'W'>;
 
+use core::pin::{*};
+use core::task::{*};
+use pin_project::pin_project;
+#[pin_project]
+pub struct NoinlineFut<F: Future>(#[pin] F);
+
+impl<F: Future> Future for NoinlineFut<F> {
+    type Output = F::Output;
+    #[inline(never)]
+    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> core::task::Poll<Self::Output> {
+        self.project().0.poll(cx)
+    }
+}
 
 pub type BipParserImplT = impl AsyncParser<Bip32Key, ByteStream> + HasOutput<Bip32Key, Output = ArrayVec<u32, 10>>;
 pub const BIP_PATH_PARSER: BipParserImplT = SubInterp(DefaultInterp);
@@ -72,7 +85,7 @@ pub fn get_address_prompting_and_example_apdu(io: HostIO) -> impl Future<Output 
             write!(temp_fmt, "{}", address).unwrap();
             rv.push(temp_fmt.as_bytes().len() as u8);
             rv.try_extend_from_slice(temp_fmt.as_bytes()).unwrap();
-            scroller("Reveal Address", |w| Ok(write!(w, "{}", address)?))?;
+            // scroller("Reveal Address", |w| Ok(write!(w, "{}", address)?))?;
             Some(())
         })();
 
@@ -85,6 +98,7 @@ pub fn get_address_prompting_and_example_apdu(io: HostIO) -> impl Future<Output 
     }
 }
 
+/*
 #[cfg(not(target_os = "nanos"))]
 #[inline(never)]
 fn scroller<F: for<'b> Fn(&mut PromptWrite<'b, 16>) -> Result<(), ScrollerError>>(
@@ -102,6 +116,7 @@ fn scroller<F: for<'b> Fn(&mut PromptWrite<'b, 16>) -> Result<(), ScrollerError>
 ) -> Option<()> {
     ledger_prompts_ui::write_scroller(title, prompt_function)
 }
+*/
 
 type HasherParser = impl AsyncParser<Transaction, ByteStream> + HasOutput<Transaction, Output=(SHA256, Option<()>)>;
 const fn hasher_parser() -> HasherParser { ObserveBytes(SHA256::new, SHA256::update, DropInterp) }
@@ -119,20 +134,30 @@ pub fn sign_apdu(io: HostIO) -> impl Future<Output = ()> {
             hash = hasher_parser().parse(&mut txn).await.0.finalize();
             trace!("Hashed txn");
         }
-        
-        if scroller("Sign Transaction", |w| Ok(write!(w, "Hash: {}", hash)?)).is_none()
-            { reject::<()>().await; }
 
+        trace!("Building prompt queue");
+        let mut prompts = PromptQueue::new(io);
+
+        trace!("Adding prompt to queue");
+        prompts.add_prompt("Sign Transaction", format_args!("Hash: {}", hash)).await;
+        trace!("Added prompt.");
+        
         let path = BIP_PATH_PARSER.parse(&mut input[1].clone()).await;
+
+        if let Some(pkh) = (|| {
+            let sk = Secp256k1::from_bip32(&path);
+            PubKey::get_address(&sk.public_key().ok()?).ok()
+        })() {
+        trace!("Adding prompt to queue");
+            prompts.add_prompt("For Address", format_args!("{pkh}")).await;
+        } else { reject::<()>().await; }
+
+        if prompts.show().await.ok() != Some(true) {
+            reject::<()>().await;
+        }
 
         if let Some((sig, sig_len)) = {
             let sk = Secp256k1::from_bip32(&path);
-            let prompt_fn = || {
-                let pkh = PubKey::get_address(&sk.public_key().ok()?).ok()?;
-                scroller("For Address", |w| Ok(write!(w, "{}", pkh)?))?;
-                final_accept_prompt(&[])
-            };
-            if prompt_fn().is_none() { reject::<()>().await; }
             sk.deterministic_sign(&hash.0[..]).ok()
         } {
             io.result_final(&sig[0..sig_len as usize]).await;
@@ -154,14 +179,14 @@ pub fn handle_apdu_async(io: HostIO, ins: Ins) -> APDUsFuture {
 
         }
         Ins::GetPubkey => {
-            get_address_apdu(io).await;
+            NoinlineFut(get_address_apdu(io)).await;
         }
         Ins::Sign => {
             trace!("Handling sign");
-            sign_apdu(io).await;
+            NoinlineFut(sign_apdu(io)).await;
         }
         Ins::RevealAddressAndExample => {
-            get_address_prompting_and_example_apdu(io).await;
+            NoinlineFut(get_address_prompting_and_example_apdu(io)).await;
         }
         Ins::GetVersionStr => {
         }

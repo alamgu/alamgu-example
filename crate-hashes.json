@@ -1,5 +1,5 @@
 {
-  "alamgu-async-block 0.1.0 (git+https://github.com/alamgu/alamgu-async-block?branch=rewrite-better-states#2a473857605f88e404406a41b06bfdc38ea16b3c)": "10xc26pqc7dvfs0zgf92z4s03108mv4gwxawknq48bdjkcjvic1p",
+  "alamgu-async-block 0.1.0 (git+https://github.com/alamgu/alamgu-async-block?branch=prompt-queueing#57a60b276ca768746365b542d9843d0d344f69a2)": "0fx3cywrsfb1smkr3b9hxj3a52ini478xkcbjhy7wz9c8x8p1wrw",
   "enum-init 0.1.0 (git+https://github.com/obsidiansystems/enum-init#a831c2fbbe00af926ae87c064bfe4da58d26777c)": "1daqa7i1778rpvk8d442flk6bak6jxi6hrcc5j4maaa7ipjc6xlr",
   "ledger-crypto-helpers 0.2.0 (git+https://github.com/alamgu/ledger-crypto-helpers?branch=hasher-dispatch#34cf27326ae12f8cc007df3b43e5f6c65812b89f)": "0plj8iwin4s57nv6hrnq4d2n9dzfla26yzf249w09xpxly1c86iy",
   "ledger-log 0.2.0 (git+https://github.com/alamgu/ledger-log#02f702bbec9ca9802151fd261508580eb3826287)": "03qic29qkvis54bgh40wwja89kcp6kz6acd0ifzyvcqxicpmikmy",

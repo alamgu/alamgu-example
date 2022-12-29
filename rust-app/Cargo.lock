@@ -23,12 +23,13 @@ dependencies = [
 [[package]]
 name = "alamgu-async-block"
 version = "0.1.0"
-source = "git+https://github.com/alamgu/alamgu-async-block?branch=rewrite-better-states#2a473857605f88e404406a41b06bfdc38ea16b3c"
+source = "git+https://github.com/alamgu/alamgu-async-block?branch=prompt-queueing#57a60b276ca768746365b542d9843d0d344f69a2"
 dependencies = [
  "arrayvec",
  "ledger-log",
  "ledger-parser-combinators",
  "nanos_sdk",
+ "nanos_ui",
  "pin-project",
 ]
 
@@ -285,6 +286,7 @@ dependencies = [
  "nanos_sdk",
  "nanos_ui",
  "pin-cell",
+ "pin-project",
  "testmacro",
  "zeroize",
 ]

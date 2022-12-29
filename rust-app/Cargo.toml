@@ -11,9 +11,10 @@ arrayvec = { version = "0.7.2", default-features = false }
 ledger-crypto-helpers = { git = "https://github.com/alamgu/ledger-crypto-helpers", branch="hasher-dispatch" }
 ledger-log = { git = "https://github.com/alamgu/ledger-log" }
 ledger-parser-combinators = { git = "https://github.com/alamgu/ledger-parser-combinators", branch="async-split" }
-alamgu-async-block = { git = "https://github.com/alamgu/alamgu-async-block", branch="rewrite-better-states" }
+alamgu-async-block = { git = "https://github.com/alamgu/alamgu-async-block", branch="prompt-queueing" }
 zeroize = { version = "1.5.2", default-features = false }
 pin-cell = "0.2.0"
+pin-project = "1.0.10"
 
 # Pass --features speculos,ledger-log/log_info (or log_trace, etc) to enable
 # speculos logging and change log level.
@@ -46,7 +47,6 @@ branch = "memory-fixes"
 git = "https://github.com/obsidiansystems/ledger-nanos-ui"
 branch = "use-lib-bagl-for-x-and-splus"
 
-
 [profile.dev]
 # We need this to ensure stack usage is minimal even on speculos
 opt-level = 3
@@ -60,7 +60,7 @@ overflow-checks = false
 [package.metadata.nanos]
 name = "Rust App"
 path = "44'/535348'"
-curve = "ed25519"
+curve = "secp256k1"
 flags = "0"
 icon = "crab.gif"
 icon_small = "crab-small.gif"

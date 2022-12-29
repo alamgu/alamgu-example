@@ -128,8 +128,8 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/alamgu/alamgu-async-block";
-          rev = "2a473857605f88e404406a41b06bfdc38ea16b3c";
-          sha256 = "10xc26pqc7dvfs0zgf92z4s03108mv4gwxawknq48bdjkcjvic1p";
+          rev = "57a60b276ca768746365b542d9843d0d344f69a2";
+          sha256 = "0fx3cywrsfb1smkr3b9hxj3a52ini478xkcbjhy7wz9c8x8p1wrw";
         };
         dependencies = [
           {
@@ -148,6 +148,10 @@ rec {
           {
             name = "nanos_sdk";
             packageId = "nanos_sdk";
+          }
+          {
+            name = "nanos_ui";
+            packageId = "nanos_ui";
           }
           {
             name = "pin-project";
@@ -836,6 +840,10 @@ rec {
           {
             name = "pin-cell";
             packageId = "pin-cell";
+          }
+          {
+            name = "pin-project";
+            packageId = "pin-project";
           }
           {
             name = "zeroize";
