@@ -4,6 +4,8 @@
 #![feature(str_internals)]
 #![feature(type_alias_impl_trait)]
 #![feature(const_mut_refs)]
+#![cfg_attr(all(target_family = "bolos", test), feature(cfg_version))]
+#![cfg_attr(all(target_family = "bolos", test), feature(asm_const))]
 #![cfg_attr(all(target_family = "bolos", test), no_main)]
 #![cfg_attr(target_family = "bolos", feature(custom_test_frameworks))]
 #![reexport_test_harness_main = "test_main"]
@@ -52,3 +54,15 @@ pub fn exiting_panic(_info: &PanicInfo) -> ! {
 ///// Custom type used to implement tests
 //#[cfg(all(target_family = "bolos", test))]
 //use nanos_sdk::TestType;
+
+#[cfg(all(target_family = "bolos", test))]
+mod test {
+    #![cfg_attr(not(version("1.64")), allow(unused))]
+    const RELOC_SIZE: usize = 1024 * 1;
+
+    ::core::arch::global_asm! {
+        ".global _reloc_size",
+        ".set _reloc_size, {reloc_size}",
+        reloc_size = const RELOC_SIZE,
+    }
+}
