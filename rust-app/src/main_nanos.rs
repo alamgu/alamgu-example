@@ -9,6 +9,10 @@ use ledger_parser_combinators::interp_parser::OOB;
 use ledger_prompts_ui::{handle_menu_button_event, show_menu};
 use nanos_sdk::io;
 
+extern "C" {
+    fn _nvram_prev_run();
+}
+
 #[allow(dead_code)]
 pub fn app_main() {
     let mut comm = io::Comm::new();
@@ -30,7 +34,22 @@ pub fn app_main() {
         ParsersState::NoState => show_menu(idle),
         _ => show_menu(busy),
     };
-
+    use core::ffi::c_void;
+    use nanos_sdk::bindings::pic;
+    let nvram_prev_run_val = unsafe {
+        // pic(_nvram_prev_run as *mut c_void) as *const u32
+            *(_nvram_prev_run as *const u32)
+    };
+    use crate::utils::scroller;
+    use core::fmt::Write;
+    trace!("nvram_val: {:?}", nvram_prev_run_val);
+    scroller("nvram_val", |w| Ok(write!(w, "{:0x}", nvram_prev_run_val)?));
+    info!("Alamgu Example {}", env!("CARGO_PKG_VERSION"));
+    info!(
+        "State sizes\ncomm: {}\nstates: {}",
+        core::mem::size_of::<io::Comm>(),
+        core::mem::size_of::<ParsersState>()
+    );
     // Draw some 'welcome' screen
     menu(&states, &idle_menu, &busy_menu);
     loop {
