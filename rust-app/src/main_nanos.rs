@@ -39,7 +39,7 @@ pub fn app_main() {
         match comm.next_event::<Ins>() {
             io::Event::Command(ins) => {
                 trace!("Command received");
-                match handle_apdu(&mut comm, ins, &mut states) {
+                match handle_apdu(&mut comm, ins, idle_menu.settings, &mut states) {
                     Ok(()) => {
                         trace!("APDU accepted; sending response");
                         comm.reply_ok();
@@ -137,7 +137,12 @@ fn run_parser_apdu<P: InterpParser<A, Returning = ArrayVec<u8, 128>>, A>(
 }
 
 #[inline(never)]
-fn handle_apdu(comm: &mut io::Comm, ins: Ins, parser: &mut ParsersState) -> Result<(), Reply> {
+fn handle_apdu(
+    comm: &mut io::Comm,
+    ins: Ins,
+    settings: Settings,
+    parser: &mut ParsersState,
+) -> Result<(), Reply> {
     info!("entering handle_apdu with command {:?}", ins);
     if comm.rx == 0 {
         return Err(io::StatusWords::NothingReceived.into());
