@@ -2,6 +2,7 @@ use crate::implementation::*;
 use crate::interface::*;
 use crate::menu::*;
 use crate::settings::*;
+use crate::state::*;
 use crate::test_parsers::*;
 
 use ledger_log::{info, trace};
@@ -85,12 +86,16 @@ use arrayvec::ArrayVec;
 use nanos_sdk::io::Reply;
 
 use ledger_parser_combinators::interp_parser::{InterpParser, ParserCommon};
-fn run_parser_apdu<P: InterpParser<A, Returning = ArrayVec<u8, 128>>, A>(
+fn run_parser_apdu<P, A, F>(
     states: &mut ParsersState,
-    get_state: fn(&mut ParsersState) -> &mut <P as ParserCommon<A>>::State,
+    get_state: F,
     parser: &P,
     comm: &mut io::Comm,
-) -> Result<(), Reply> {
+) -> Result<(), Reply>
+where
+    P: InterpParser<A, Returning = ArrayVec<u8, 128>>,
+    F: FnOnce(&mut ParsersState) -> &mut <P as ParserCommon<A>>::State,
+{
     let cursor = comm.get_data()?;
 
     trace!("Parsing APDU input: {:?}\n", cursor);
@@ -157,22 +162,25 @@ fn handle_apdu(
             ]);
             comm.append(b"alamgu example");
         }
-        Ins::VerifyAddress => run_parser_apdu::<_, Bip32Key>(
+        Ins::VerifyAddress => run_parser_apdu::<_, Bip32Key, _>(
             parser,
             get_get_address_state::<true>,
             &get_address_impl::<true>(),
             comm,
         )?,
-        Ins::GetPubkey => run_parser_apdu::<_, Bip32Key>(
+        Ins::GetPubkey => run_parser_apdu::<_, Bip32Key, _>(
             parser,
             get_get_address_state::<false>,
             &get_address_impl::<false>(),
             comm,
         )?,
-        Ins::Sign => {
-            run_parser_apdu::<_, SignParameters>(parser, get_sign_state, &SIGN_IMPL, comm)?
-        }
-        Ins::TestParsers => run_parser_apdu::<_, TestParsersSchema>(
+        Ins::Sign => run_parser_apdu::<_, SignParameters, _>(
+            parser,
+            move |state| get_sign_state(state, settings),
+            &SIGN_IMPL,
+            comm,
+        )?,
+        Ins::TestParsers => run_parser_apdu::<_, TestParsersSchema, _>(
             parser,
             get_test_parsers_state,
             &test_parsers_parser(),

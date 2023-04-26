@@ -37,6 +37,9 @@ pub mod test_parsers;
 pub mod implementation;
 
 #[cfg(all(target_family = "bolos"))]
+pub mod state;
+
+#[cfg(all(target_family = "bolos"))]
 pub mod menu;
 
 #[cfg(all(target_family = "bolos"))]

@@ -4,6 +4,9 @@ use ledger_prompts_ui::{PromptWrite, ScrollerError};
 pub const fn mkfn<A, B, C>(q: fn(&A, &mut B) -> C) -> fn(&A, &mut B) -> C {
     q
 }
+pub const fn mkfn3<A, B, C, D>(q: fn(&A, &mut B, C) -> D) -> fn(&A, &mut B, C) -> D {
+    q
+}
 pub const fn mkmvfn<A, B, C>(q: fn(A, &mut B) -> Option<C>) -> fn(A, &mut B) -> Option<C> {
     q
 }
