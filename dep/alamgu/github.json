@@ -1,8 +1,8 @@
 {
   "owner": "alamgu",
   "repo": "alamgu",
-  "branch": "develop",
+  "branch": "dn-nixpkgs-unstable",
   "private": false,
-  "rev": "4407e239fe846525705c7fd2ade7cb3f230b1b9e",
-  "sha256": "14p1n40dlra7c7a55ma8qlr9q4niq4qjlv16jq61qbcx3d8y500g"
+  "rev": "3c60e927b5802218fac0f130ae8b4e71ac96597d",
+  "sha256": "0zgz55q743i7544i6x6hfdb861wrcds7zyr3sks9326kbz0mhkwq"
 }
