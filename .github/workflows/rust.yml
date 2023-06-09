@@ -20,6 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rust-src, rustfmt
       - run: rustup component add rustfmt
       - name: Cargo fmt
         uses: actions-rs/cargo@v1
@@ -48,6 +52,10 @@ jobs:
           ref: memory-fixes
           path: rsdk
       - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rust-src, clippy
       - run: rustup component add clippy
       - name: Remove --emit from config before clippy
         # otherwise it does not work
@@ -81,6 +89,10 @@ jobs:
       - name: Install clang
         run: sudo apt-get update && sudo apt install -y clang
       - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rust-src
       - run: echo "$PWD/rsdk/scripts" >> $GITHUB_PATH
       - name: Cargo build
         uses: actions-rs/cargo@v1
