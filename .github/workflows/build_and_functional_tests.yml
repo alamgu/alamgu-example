@@ -29,6 +29,6 @@ jobs:
   functional_tests:
     name: Run tests
     needs: build_application
-    uses: ./.github/workflows/functional_tests.yml
+    uses: ./.github/workflows/functional_tests.yml@ci-gh-1
     with:
       download_app_binaries_artifact: "compiled_app_binaries"
