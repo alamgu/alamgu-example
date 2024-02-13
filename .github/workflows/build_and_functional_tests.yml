@@ -15,6 +15,7 @@ on:
       - master
       - main
       - develop
+      - develop-sync
   pull_request:
 
 jobs:
