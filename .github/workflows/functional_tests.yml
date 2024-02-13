@@ -14,17 +14,6 @@ on:
         required: false
         default: ${{ github.ref }}
         type: string
-      test_dir:
-        description: |
-          The directory where the Python tests are stored (a `conftest.py` file is expected there).
-
-          If the application is configured with a 'ledger_app.toml' file at its root containing a
-          `test.pytest_directory` field, this parameter is ignored.
-          If this parameter is defined neither as a workflow input nor in the manifest file, the
-          workflow will output an error.
-        required: false
-        default: 'None'
-        type: string
       download_app_binaries_artifact:
         description: 'The name of the artifact containing the application binary file(s) to be tested. Required'
         required: true
@@ -76,7 +65,6 @@ jobs:
       app_repository: ${{ inputs.app_repository }}
       app_branch_name: ${{ inputs.app_branch_name }}
       compatible_devices: ${{ inputs.run_for_devices }}
-      pytest_directory: ${{ inputs.test_dir }}
 
   functional_tests:
     name: Functional tests
@@ -88,14 +76,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check metadata
-        run: |
-          if [[ '${{ needs.call_get_app_metadata.outputs.pytest_directory }}' == 'None' ]];
-          then
-              >&2 echo "ERROR: This workflow either needs a 'ledger_app.toml' manifest with a 'tests.pytest_directory' section, or be configured with a valid 'test_dir' parameter";
-              exit 1;
-          fi
-
       - name: Clone
         uses: actions/checkout@v4
         with:
@@ -115,13 +95,6 @@ jobs:
         with:
           name: ${{ inputs.additional_app_binaries_artifact }}
           path: ${{ inputs.additional_app_binaries_artifact_dir }}
-
-      - name: Download additional lib binaries if required
-        if: ${{ inputs.lib_binaries_artifact != '' }}
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ inputs.lib_binaries_artifact }}
-          path: ${{ needs.call_get_app_metadata.outputs.pytest_directory }}/lib_binaries/
 
       - name: Set Node.js 16.x
         uses: actions/setup-node@v3
