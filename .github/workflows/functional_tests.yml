@@ -1,5 +1,5 @@
 ---
-name: Functional tests using Ragger
+name: Functional tests
 
 on:
   workflow_call:
@@ -78,8 +78,8 @@ jobs:
       compatible_devices: ${{ inputs.run_for_devices }}
       pytest_directory: ${{ inputs.test_dir }}
 
-  ragger_tests:
-    name: Functional tests with Ragger
+  functional_tests:
+    name: Functional tests
     needs: call_get_app_metadata
     strategy:
       fail-fast: false
@@ -123,21 +123,25 @@ jobs:
           name: ${{ inputs.lib_binaries_artifact }}
           path: ${{ needs.call_get_app_metadata.outputs.pytest_directory }}/lib_binaries/
 
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Install yarn
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # will run `yarn install` command
+          dir: 'ts-tests'
+
       - name: Install tests dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y qemu-user-static tesseract-ocr libtesseract-dev
           pip install -U pip setuptools
-          pip install -r "${{ needs.call_get_app_metadata.outputs.pytest_directory }}/requirements.txt"
+          pip install speculos
 
       - name: Run test
-        env:
-          CTEST_OUTPUT_ON_FAILURE: 1
-          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
-        run: pytest ${{ needs.call_get_app_metadata.outputs.pytest_directory }}/ --tb=short -v --device ${{ matrix.device }} -k ${{ inputs.test_filter }}
-
-      - name: Upload snapshots
-        if: ${{ failure() && inputs.upload_snapshots_on_failure == true }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.device }}-tests-snapshots
-          path: ${{ needs.call_get_app_metadata.outputs.pytest_directory }}/snapshots-tmp/${{ matrix.device }}
+        run: |
+          speculos --api-port 5005 ${{ needs.call_get_app_metadata.outputs.build_directory }}/build/ --display headless &
+          sleep 5
+          yarn run test
