@@ -116,7 +116,7 @@ jobs:
       - name: Run test
         run: |
           BIN_DIR_NAME="$(echo ${{ matrix.device }} | sed 's/nanosp/nanos2/')"
-          speculos --api-port 5005 ${{ needs.call_get_app_metadata.outputs.build_directory }}/build/${BIN_DIR_NAME}/app.elf --display headless &
+          speculos --api-port 5005 ${{ needs.call_get_app_metadata.outputs.build_directory }}/build/${BIN_DIR_NAME}/bin/app.elf --display headless &
           sleep 5
           cd ts-tests
           yarn run test
