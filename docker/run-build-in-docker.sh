@@ -7,7 +7,6 @@ RUST_NANOS_SDK=`mktemp -d`
 TARGET_DIR=`mktemp -d`
 
 git clone --depth=1 "$RUST_NANOS_SDK_GIT" "$RUST_NANOS_SDK"
-cd "$RUST_NANOS_SDK"; git checkout "$RUST_NANOS_SDK_REV"; cd -
 
 PATH=$RUST_NANOS_SDK/ledger_device_sdk:$PATH
 export OBJCOPY="llvm-objcopy"

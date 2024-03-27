@@ -255,7 +255,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "ledger-crypto-helpers"
 version = "0.2.1"
-source = "git+https://github.com/alamgu/ledger-crypto-helpers#081b417dfe6641011200ecb4661347baf1339fd6"
+source = "git+https://github.com/alamgu/ledger-crypto-helpers#260191a3e814f3b4585a91fa6dc5f260a13c8b2e"
 dependencies = [
  "arrayvec",
  "base64",
@@ -306,9 +306,9 @@ dependencies = [
 
 [[package]]
 name = "ledger_device_sdk"
-version = "1.7.1"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c119b704c1240c3e21fcaff94ea8cdc110ac949eb118c5e6e5dbc9c7a61ebe2"
+checksum = "f99d39260bbde6dfef6a2420440b79f7a486ab2fbf43d251600a759697a79361"
 dependencies = [
  "include_gif",
  "ledger_secure_sdk_sys",
